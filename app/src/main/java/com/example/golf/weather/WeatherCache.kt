@@ -36,7 +36,7 @@ class WeatherCache(var time: Long, val cronetEngine: CronetEngine, val url: Stri
 
             val request: UrlRequest = requestBuilder.build()
             request.start()
-            while (!request.isDone) {
+            while (!callback.isCompleted) {
                 Thread.sleep(1000)
             }
             if (callback.weatherApiResponse != null) {

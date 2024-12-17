@@ -13,6 +13,9 @@ private const val TAG = "MyUrlRequestCallback"
 
 class HttpCallback : UrlRequest.Callback() {
     var weatherApiResponse : WeatherApiResponse? = null
+    var isCompleted : Boolean = false
+    var receivedData = ByteBuffer.allocateDirect(307200)
+
     override fun onRedirectReceived(request: UrlRequest?, info: UrlResponseInfo?, newLocationUrl: String?) {
         Log.i(TAG, "onRedirectReceived method called.")
         // You should call the request.followRedirect() method to continue
@@ -30,14 +33,30 @@ class HttpCallback : UrlRequest.Callback() {
     }
 
     override fun onReadCompleted(request: UrlRequest?, info: UrlResponseInfo?, byteBuffer: ByteBuffer?) {
-        Log.i(TAG, "onReadCompleted method called.")
-        val str1 = String(byteBuffer!!.array(), StandardCharsets.UTF_8).replace("\u0000", "")
-        weatherApiResponse = Json.decodeFromString<WeatherApiResponse>(str1)
-        byteBuffer.clear()
-        request?.read(byteBuffer)
+        byteBuffer!!.flip() // Prepare the received buffer for reading
+
+        // Ensure sufficient capacity in receivedData
+        if (receivedData.remaining() < byteBuffer.remaining()) {
+            val newBuffer = ByteBuffer.allocate(receivedData.capacity() + byteBuffer.remaining())
+            receivedData.flip()
+            newBuffer.put(receivedData)
+            receivedData = newBuffer
+        }
+
+        receivedData.put(byteBuffer) // Append received data
+        byteBuffer.clear() // Prepare the received buffer for the next read
+
+        request!!.read(byteBuffer)
     }
 
     override fun onSucceeded(request: UrlRequest?, info: UrlResponseInfo?) {
+        val str1 = String(receivedData.array(), StandardCharsets.UTF_8).replace("\u0000", "")
+        try {
+            weatherApiResponse = Json.decodeFromString<WeatherApiResponse>(str1)
+        } catch(e: Exception) {
+            Log.e(TAG, e.message.toString())
+        }
+        isCompleted = true
         Log.i(TAG, "onSucceeded method called.")
     }
 
@@ -48,5 +67,6 @@ class HttpCallback : UrlRequest.Callback() {
     ) {
         weatherApiResponse = null
         Log.e(TAG, "onFailed method called, error: $error, urlResponseInfo: $info")
+        isCompleted = true
     }
 }
