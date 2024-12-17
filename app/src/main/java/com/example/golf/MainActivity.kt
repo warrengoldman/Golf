@@ -14,10 +14,12 @@ import com.example.golf.databinding.ActivityMainBinding
 import com.example.golf.weather.WeatherCache
 import org.chromium.net.CronetEngine
 
+
 class MainActivity : AppCompatActivity() {
     private lateinit var cronetEngine: CronetEngine
     private val weatherCache: WeatherCache by lazy {
-        WeatherCache(0, getCronentEngine(), getWeatherApiUrl())
+        val url = getWeatherApiUrl()
+        WeatherCache(0, getCronentEngine(), url)
     }
     private lateinit var url: String
     private lateinit var binding: ActivityMainBinding

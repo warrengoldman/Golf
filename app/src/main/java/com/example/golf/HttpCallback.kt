@@ -46,6 +46,7 @@ class HttpCallback : UrlRequest.Callback() {
         info: UrlResponseInfo?,
         error: CronetException?
     ) {
+        weatherApiResponse = null
         Log.e(TAG, "onFailed method called, error: $error, urlResponseInfo: $info")
     }
 }

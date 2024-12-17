@@ -2,6 +2,7 @@ package com.example.golf.weather
 
 import android.icu.util.Calendar
 import android.os.Build
+import android.util.Log
 import com.example.golf.HttpCallback
 import com.example.golf.WeatherEntry
 import kotlinx.datetime.Instant
@@ -17,18 +18,14 @@ import java.util.concurrent.Executors
 
 class WeatherCache(var time: Long, val cronetEngine: CronetEngine, val url: String) {
     private val TEN_MINUTES : Long = 600000
-    var cachedWeatherEntries : List<WeatherEntry>? = null
-    fun getWeatherEntries(timeNow:Long) : List<WeatherEntry>? {
-        if (this.time == 0L || ((timeNow - time) > TEN_MINUTES) ) {
-            cachedWeatherEntries = listOf()
-            this.time = timeNow
-        }
-        return cachedWeatherEntries
-    }
-
+    var cachedWeatherEntries : List<WeatherEntry>? = listOf()
+    var cacheExpired : Boolean = true
+    var retryCnt : Int = 0
     fun getWeatherEntries(): List<WeatherEntry>? {
-        val weatherEntries = getWeatherEntries(Calendar.getInstance().time.time)!!
-        if (weatherEntries.isEmpty()) {
+        if ((Calendar.getInstance().time.time - time) > TEN_MINUTES) {
+            cacheExpired = true
+        }
+        if (cacheExpired) {
             val executor: Executor = Executors.newSingleThreadExecutor()
             val callback = HttpCallback()
             val requestBuilder = cronetEngine.newUrlRequestBuilder(
@@ -42,7 +39,16 @@ class WeatherCache(var time: Long, val cronetEngine: CronetEngine, val url: Stri
             while (!request.isDone) {
                 Thread.sleep(1000)
             }
-            cachedWeatherEntries = convertToWeatherEntries(callback.weatherApiResponse)
+            if (callback.weatherApiResponse != null) {
+                cachedWeatherEntries = convertToWeatherEntries(callback.weatherApiResponse)
+                cacheExpired = false
+                retryCnt = 0
+            } else if (retryCnt < 2) {
+                retryCnt++
+                return getWeatherEntries()
+            } else {
+                Log.i("WeatherCache", "retry count exceeded, failing.")
+            }
         }
         return cachedWeatherEntries
     }

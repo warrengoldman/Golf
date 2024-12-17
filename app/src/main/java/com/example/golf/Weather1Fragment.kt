@@ -38,7 +38,10 @@ class Weather1Fragment(val weatherCache: WeatherCache, val textViewSunset: TextV
             val weatherEntries = weatherCache.getWeatherEntries()
             requireActivity().runOnUiThread {
                 weather1Adapter.setEntries(filterWeatherEntries(weatherEntries!!))
-                val sunsetTime = weatherEntries[0].sunsetFormattedTime
+                var sunsetTime = "No information available"
+                if (weatherEntries.isNotEmpty()) {
+                    sunsetTime = weatherEntries[0].sunsetFormattedTime
+                }
                 textViewSunset.text = getString(R.string.sunset, sunsetTime)
             }
         }
