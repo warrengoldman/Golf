@@ -30,22 +30,21 @@
             android:id="@+id/text_view_temp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="12sp"
             tools:text="Temp: 75" />
 
         <TextView
             android:id="@+id/text_view_weather_skies"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textSize="18sp"
+            android:layout_marginStart="2dp"
+            android:textSize="12sp"
             tools:text="Skies: Clear - clear sky" />
 
         <ImageView
             android:id="@+id/image_view_weather_icon"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginStart="4dp"
             android:contentDescription="@string/weather_icon"
             android:src="@drawable/_1d" />
     </LinearLayout>
@@ -56,13 +55,13 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="8dp">
 
         <TextView
             android:id="@+id/text_view_wind"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="12sp"
             tools:text="Wind: 10mph, NW" />
     </LinearLayout>
 </LinearLayout>

@@ -2,7 +2,7 @@ package com.example.golf
 
 data class WeatherEntry(
     val sunsetFormattedTime: String,
-    val temp: Double,
+    val temp: Int,
     val heading: String,
     val dt: Long,
     val skyTitle: String,

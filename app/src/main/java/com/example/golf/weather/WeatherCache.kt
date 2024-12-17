@@ -64,7 +64,7 @@ class WeatherCache(var time: Long, val cronetEngine: CronetEngine, val url: Stri
 
         for (weatherApiListElement in response.list!!) {
             val main = weatherApiListElement.main!!
-            val temp = main.temp!!
+            val temp = main.temp!!.toInt()
             val dtInCst = weatherApiListElement.dt!!
             val formattedDate = getFormatted( dtInCst, dtf)
             val weather = weatherApiListElement.weather!!
