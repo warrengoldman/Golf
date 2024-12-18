@@ -38,9 +38,9 @@ class MainActivity : AppCompatActivity() {
             }&appid=${getString(R.string.weather_api_key)}&units=imperial"
         return url
     }
-    fun setGolfUrl() : String {
-        golfUrl =
-            "${getString(R.string.golf_url)}?teetimes=2"
+
+    fun setGolfUrl(): String {
+        golfUrl = getString(R.string.golf_url)
         return golfUrl
     }
 
@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         }
         weather1Fragment = Weather1Fragment(weatherCache, binding.textViewSunset)
         binding.pager.adapter = PagerAdapter(this)
-        // TeeUpdateCallback(cronetEngine, golfUrl).setTeeTimes()
+//        TeeUpdateCallback(cronetEngine, golfUrl).setTeeTimes()
     }
 
     inner class PagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {

@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.Executors
 
 private const val TAG = "****TEEUPDATECALLBACK****"
+
 class TeeUpdateCallback(val cronetEngine: CronetEngine, val url: String) : UrlRequest.Callback() {
     override fun onRedirectReceived(
         request: UrlRequest?,
@@ -55,11 +56,14 @@ class TeeUpdateCallback(val cronetEngine: CronetEngine, val url: String) : UrlRe
     }
 
     fun setTeeTimes() {
+        val urlWithParam = "$url?teetimes=8,3"
         val requestBuilder = cronetEngine.newUrlRequestBuilder(
-            url,
+            urlWithParam,
             this,
             Executors.newSingleThreadExecutor()
         )
-        requestBuilder.build().start()
+        requestBuilder.setHttpMethod("GET")
+        val request = requestBuilder.build()
+        request.start()
     }
 }
