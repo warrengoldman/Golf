@@ -16,11 +16,17 @@ import java.util.Locale
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
-class WeatherCache(var time: Long, val cronetEngine: CronetEngine, val url: String) {
-    private val TEN_MINUTES : Long = 600000
-    var cachedWeatherEntries : List<WeatherEntry>? = listOf()
-    var cacheExpired : Boolean = true
-    var retryCnt : Int = 0
+
+class WeatherCache(
+    var time: Long,
+    val cronetEngine: CronetEngine,
+    val url: String,
+    val golfUrl: String
+) {
+    private val TEN_MINUTES: Long = 600000
+    var cachedWeatherEntries: List<WeatherEntry>? = listOf()
+    var cacheExpired: Boolean = true
+    var retryCnt: Int = 0
     fun getWeatherEntries(): List<WeatherEntry>? {
         if ((Calendar.getInstance().time.time - time) > TEN_MINUTES) {
             cacheExpired = true
@@ -66,7 +72,7 @@ class WeatherCache(var time: Long, val cronetEngine: CronetEngine, val url: Stri
             val main = weatherApiListElement.main!!
             val temp = main.temp!!.toInt()
             val dtInCst = weatherApiListElement.dt!!
-            val formattedDate = getFormatted( dtInCst, dtf)
+            val formattedDate = getFormatted(dtInCst, dtf)
             val weather = weatherApiListElement.weather!!
             val weatherMain = weather[0].main!!
             val weatherDescription = weather[0].description!!

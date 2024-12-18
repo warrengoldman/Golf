@@ -18,10 +18,12 @@ import org.chromium.net.CronetEngine
 class MainActivity : AppCompatActivity() {
     private lateinit var cronetEngine: CronetEngine
     private val weatherCache: WeatherCache by lazy {
-        val url = getWeatherApiUrl()
-        WeatherCache(0, getCronentEngine(), url)
+        setWeatherApiUrl()
+        setGolfUrl()
+        WeatherCache(0, getCronentEngine(), url, golfUrl)
     }
     private lateinit var url: String
+    private lateinit var golfUrl: String
     private lateinit var binding: ActivityMainBinding
     private lateinit var weather1Fragment: Weather1Fragment
     fun getCronentEngine(): CronetEngine {
@@ -29,13 +31,19 @@ class MainActivity : AppCompatActivity() {
         return cronetEngine
     }
 
-    fun getWeatherApiUrl(): String {
+    fun setWeatherApiUrl(): String {
         url =
             "${getString(R.string.weather_api_url)}?lat=${getString(R.string.ridges_latitude)}&lon=${
                 getString(R.string.ridges_longitude)
             }&appid=${getString(R.string.weather_api_key)}&units=imperial"
         return url
     }
+    fun setGolfUrl() : String {
+        golfUrl =
+            "${getString(R.string.golf_url)}?teetimes=2"
+        return golfUrl
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         }
         weather1Fragment = Weather1Fragment(weatherCache, binding.textViewSunset)
         binding.pager.adapter = PagerAdapter(this)
+        // TeeUpdateCallback(cronetEngine, golfUrl).setTeeTimes()
     }
 
     inner class PagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {

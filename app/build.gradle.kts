@@ -3,8 +3,12 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("kotlinx-serialization")
 }
-
 android {
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
     namespace = "com.example.golf"
     compileSdk = 35
 

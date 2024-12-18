@@ -2,8 +2,8 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
-      <module name="Golf.main" target="21" />
-      <module name="Golf.test" target="21" />
+      <module name="Golf.main" target="17" />
+      <module name="Golf.test" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>

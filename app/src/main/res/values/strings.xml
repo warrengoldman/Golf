@@ -10,5 +10,6 @@
     <string name="weather_wind">Wind: %1$s mph (gusts: %2$s), %3$s</string>
     <string name="weather_icon">weather icon</string>
     <string name="weather_api_url">http://api.openweathermap.org/data/2.5/forecast</string>
+    <string name="golf_url">https://jtowngolf.web.app</string>
     <string name="sunset">Sunset: %1$s</string>
 </resources>
