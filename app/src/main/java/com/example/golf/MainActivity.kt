@@ -20,13 +20,13 @@ class MainActivity : AppCompatActivity() {
     private val weatherCache: WeatherCache by lazy {
         setWeatherApiUrl()
         setGolfUrl()
-        WeatherCache(0, getCronentEngine(), url, golfUrl)
+        WeatherCache(0, getCronetEngine(), url, golfUrl)
     }
     private lateinit var url: String
     private lateinit var golfUrl: String
     private lateinit var binding: ActivityMainBinding
     private lateinit var weather1Fragment: Weather1Fragment
-    fun getCronentEngine(): CronetEngine {
+    fun getCronetEngine(): CronetEngine {
         cronetEngine = CronetEngine.Builder(this).build()
         return cronetEngine
     }
