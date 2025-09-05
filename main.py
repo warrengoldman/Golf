@@ -11,17 +11,17 @@ async def read_root():
 
 
 
-@app.get("/healthy")
-async def health_check():
-    """
-    Handles GET requests to the root path.
-    """
-    return {'status': 'Healthy'}
-
-@app.head("/")
-async def head_root():
-    """
-    Handles HEAD requests to the root path.
-    Returns an empty response with a 200 OK status.
-    """
-    return Response(status_code=200)
+# @app.get("/healthy")
+# async def health_check():
+#     """
+#     Handles GET requests to the root path.
+#     """
+#     return {'status': 'Healthy'}
+#
+# @app.head("/")
+# async def head_root():
+#     """
+#     Handles HEAD requests to the root path.
+#     Returns an empty response with a 200 OK status.
+#     """
+#     return Response(status_code=200)
