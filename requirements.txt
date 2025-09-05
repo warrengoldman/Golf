@@ -1,0 +1,11 @@
+fastapi
+jinja2
+pydantic
+SQLAlchemy
+alembic
+starlette
+uvicorn
+databases
+httpx
+pytest
+pytest-asyncio
