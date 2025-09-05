@@ -5,4 +5,4 @@ app = FastAPI()
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
-    return "<h1>Hello, World!</h1>"
+    return "<h1>Hello, World - Delta!</h1>"
