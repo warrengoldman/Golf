@@ -18,10 +18,10 @@ async def read_root():
 #     """
 #     return {'status': 'Healthy'}
 #
-# @app.head("/")
-# async def head_root():
-#     """
-#     Handles HEAD requests to the root path.
-#     Returns an empty response with a 200 OK status.
-#     """
-#     return Response(status_code=200)
+@app.head("/")
+async def head_root():
+    """
+    Handles HEAD requests to the root path.
+    Returns an empty response with a 200 OK status.
+    """
+    return Response(status_code=200)
