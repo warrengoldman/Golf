@@ -1,11 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/css/bootstrap.css') }}">
-    <meta charset="UTF-8">
-    <title>Event App</title>
-</head>
-<body>
-    <h1>TODO Add page to create event. Also could list existing possible events which are clickable</h1>
-</body>
-</html>
+{% include 'layout.html' %}
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Welcome to the Event App</h5>
+            <p class="card-text">This is a simple web application to manage events</p>
+            <p class="card-text">Add event name and optionally the events first date</p>
+            <p class="card-text">Event names must be globally unique</p>
+            <p class="card-text">Events can contain more than one date, you may add those later</p>
+            <form id="mainForm">
+                <label for="event_name">Event Name</label><input type="text" class="form-control mb-2" id="event_name" name="event_name" placeholder="Event Name" required>
+                <label for="description">Event Description</label><input type="text" class="form-control mb-2" id="description" name="description" placeholder="Event Description (optional)">
+                <label for="event_date">Event Date</label><input type="date" class="form-control mb-2" id="event_date" name="event_date" placeholder="Event Date (optional)">
+                <button type="submit" class="btn btn-primary rounded-pill" id="hi">Create Event</button>
+            </form>
+        </div>
+    </div>
+</div>

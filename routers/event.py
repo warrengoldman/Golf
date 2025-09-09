@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 from starlette import status
 from database import SessionLocal
@@ -6,7 +6,7 @@ from typing import Annotated
 from sqlalchemy.orm import Session, InstrumentedAttribute
 from models import Event, EventDate, Activity, Participant
 from datetime import datetime, timezone, date
-
+from fastapi.templating import Jinja2Templates
 router = APIRouter()
 
 def get_db():
@@ -18,10 +18,11 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
+templates = Jinja2Templates(directory="templates")
 
 @router.get("/event/main-page")
-async def main_page():
-    return {'message': 'This is the main page. TBD Implement this'}
+async def main_page(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request})
 
 @router.get("/{event_name}")
 async def display_event(event_name: str, db: db_dependency):
