@@ -25,7 +25,7 @@ async def main_page(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
 
 @router.get("/{event_name}")
-async def display_event(event_name: str, db: db_dependency):
+async def display_event(event_name: str, db: db_dependency, request: Request):
     """
     Handles GET requests to the /{event_name} path.
     Will retrieve data for event_name from the database
@@ -43,7 +43,7 @@ async def display_event(event_name: str, db: db_dependency):
             if activities:
                 for act in activities:
                     participants = act.participants  # Access participants to ensure they are loaded
-    return { "event": event }
+    return templates.TemplateResponse("event.html", {"request": request, "event": event})
 
 class EventRequest(BaseModel):
     event_name: str = Field(min_length=3, max_length=15, pattern=r"[a-zA-Z0-9\-_/]+$")
