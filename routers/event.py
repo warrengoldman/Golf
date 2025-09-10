@@ -34,6 +34,20 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
         If data exists, render a page with the event data.
     Currently, it just returns the event_name.
     """
+    event = get_event_json_sync(event_name, db)
+    view_only = False
+    return templates.TemplateResponse("event.html", {"request": request, "event": event, "view_only": view_only})
+
+@router.get("/{event_name}/json")
+async def get_event_json(event_name: str, db: db_dependency):
+    return get_event_json_sync(event_name, db)
+
+def get_event_json_sync(event_name: str, db: db_dependency):
+    """
+    Handles GET requests to the /{event_name}/json path.
+    Will retrieve data for event_name from the database and return it as JSON.
+    If no data exists for event_name, it will return a 404 Not Found error.
+    """
     event = db.query(Event).filter(Event.event_name == event_name).first()
     if not event:
         return {'error': 'Event not found. TBD Handle this', 'status': status.HTTP_404_NOT_FOUND}
@@ -42,9 +56,16 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
             activities = ed.activities  # Access activities to ensure they are loaded
             if activities:
                 for act in activities:
-                    participants = act.participants  # Access participants to ensure they are loaded
-    view_only = False
-    return templates.TemplateResponse("event.html", {"request": request, "event": event, "view_only": view_only})
+                    _ = act.participants  # Access participants to ensure they are loaded
+    return event
+
+@router.get("/event/activity/{activity_id}/json")
+async def get_activity_json(activity_id: int, db: db_dependency):
+    activity = db.query(Activity).filter(Activity.id == activity_id).first()
+    if not activity:
+        return {'error': 'Activity not found.', 'status': status.HTTP_404_NOT_FOUND}
+    _ = activity.participants  # Access participants to ensure they are loaded
+    return activity
 
 class EventRequest(BaseModel):
     event_name: str = Field(min_length=3, max_length=15, pattern=r"[a-zA-Z0-9\-_/]+$")
@@ -80,7 +101,7 @@ async def create_event_date(db: db_dependency, event_date: date, event_id: int):
 
 class ActivityRequest(BaseModel):
     activity_name: str = Field(min_length=3, max_length=50)
-    activity_time: str = Field(pattern=r"^(?:[01]\d|2[0-3]):[0-5]\d$")  # HH:MM format
+    activity_time: str = Field(pattern=r"^(?:0[0-9]|1[0-9]|2[0-3]|[1-9]):[0-5]\d$")  # HH:MM format
 
 @router.post("/eventdate/{event_date_id}", status_code=status.HTTP_201_CREATED)
 async def create_event_date_activity(db: db_dependency, activity: ActivityRequest, event_date_id: int):

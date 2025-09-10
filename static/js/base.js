@@ -38,48 +38,112 @@ if (mainForm) {
     });
 }
 
-const addParticipantForm = document.getElementById('addParticipantForm');
-if (addParticipantForm) {
-    addParticipantForm.addEventListener('submit', async function (event) {
-        event.preventDefault();
+const addParticipantForms = document.getElementsByClassName('add-participant-form');
+if (addParticipantForms) {
+    Array.from(addParticipantForms).map(addParticipantForm => {
+        addParticipantForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
 
-        const form = event.target;
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        const participantName = data.participant_name;
-        const contactInfo = data.contact_info;
-        const url = '/activity/' + event.target.addParticipantBtn.dataset.activityId;
-        const eventName = event.target.addParticipantBtn.dataset.eventName;
-        const payload = {
-            participant_name: participantName,
-            contact_info: contactInfo,
-        };
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const participantName = data.participant_name;
+            const contactInfo = data.contact_info;
+            const url = '/activity/' + event.target.addParticipantBtn.dataset.activityId;
+            const eventName = event.target.addParticipantBtn.dataset.eventName;
+            const payload = {
+                participant_name: participantName,
+                contact_info: contactInfo,
+            };
 
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
 
-            if (response.ok) {
-                window.location = '/' + eventName;
-            } else {
-                // Handle error
-                const errorData = await response.json();
-                alert(`Error: ${errorData.detail}`);
+                if (response.ok) {
+                    window.location = '/' + eventName;
+                } else {
+                    // Handle error
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.detail}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        }
+        })
+    });
+}
+
+const addActivityForms = document.getElementsByClassName('add-activity-form');
+if (addActivityForms) {
+    Array.from(addActivityForms).map(addActivityForm => {
+        addActivityForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const activityName = data.activity_name;
+            const activityTime = data.activity_time;
+            const url = '/eventdate/' + event.target.addActivityBtn.dataset.eventDateId;
+            const eventName = event.target.addActivityBtn.dataset.eventName;
+            const payload = {
+                activity_name: activityName,
+                activity_time: activityTime,
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    window.location = '/' + eventName;
+                } else {
+                    // Handle error
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.detail}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        })
     });
 }
 
 async function removeParticipant(participantId, eventName) {
     const url = '/eventparticipant/' + participantId;
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+        });
+
+        if (response.ok) {
+            window.location = '/' + eventName;
+        } else {
+            // Handle error
+            const errorData = await response.json();
+            alert(`Error: ${errorData.detail}`);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    }
+}
+
+async function removeActivity(activityId, eventName) {
+    const url = '/eventactivity/' + activityId;
     try {
         const response = await fetch(url, {
             method: 'DELETE',
