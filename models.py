@@ -47,4 +47,7 @@ class Participant(Base):
     contact_info = Column(String, nullable=True)
     create_date = Column(DateTime, nullable=True)
     def __str__(self):
-        return f"{self.participant_name}, contact info - {self.contact_info}"
+        ci = ''
+        if self.contact_info:
+            ci = ', ' + self.contact_info
+        return f"{self.participant_name}{ci}"

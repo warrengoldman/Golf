@@ -43,7 +43,8 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
             if activities:
                 for act in activities:
                     participants = act.participants  # Access participants to ensure they are loaded
-    return templates.TemplateResponse("event.html", {"request": request, "event": event})
+    view_only = False
+    return templates.TemplateResponse("event.html", {"request": request, "event": event, "view_only": view_only})
 
 class EventRequest(BaseModel):
     event_name: str = Field(min_length=3, max_length=15, pattern=r"[a-zA-Z0-9\-_/]+$")

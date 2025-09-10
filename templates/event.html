@@ -1,34 +1,99 @@
 {% include 'layout.html' %}
-{% include 'layout.html' %}
 <div class="container">
     <div class="card">
         <div class="card-body">
             <h5 class="card-title">Event: {{ event.event_name }}</h5>
             <p class="card-text">{{ event.description }}</p>
             <h6 class="card-subtitle mb-2 text-muted">Dates:</h6>
+            {% if event.event_dates %}
             <ul class="list-group mb3 no-border">
-                {% if event.event_dates %}
-                    {% for e_date in event.event_dates %}
-                        <li class="list-group mb-2">{{ e_date.event_date }}</li>
+                {% for e_date in event.event_dates %}
+                <li class="list-group mb-2">{{ e_date.event_date }}</li>
+                <li class="list-group mb-2">
+                    <ul>
+                        {% for activity in e_date.activities %}
+                        <li class="list-group mb-2">{{ activity.activity_name }} {{ activity.activity_time }}</li>
                         <li class="list-group mb-2">
-                                <ul>
-                                    {% for activity in e_date.activities %}
-                                        <li class="list-group mb-2">{{ activity.activity_name }} {{ activity.activity_time }}</li>
-                                        <li class="list-group mb-2">
-                                            <ul>
-                                                {% for participant in activity.participants %}
-                                                    <li>{{ participant }}</li>
-                                                {% endfor %}
-                                            </ul>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
+                            <ul>
+                                {% for participant in activity.participants %}
+                                <li class="pb-2">{{ participant }} <a href="javascript:removeParticipant({{ participant.id }} ,'{{ event.event_name }}' );">Remove</a></li>
+                                {% endfor %}
+                                {% if not view_only %}
+                                <li class="list-group mb-2">
+                                    <div id="accordion">
+                                    <div class="card">
+                                       <div class="card-header" id="headingOne">
+                                          <h5 class="mb-0">
+                                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                              Add Participant to {{ activity.activity_time }} {{ activity.activity_name }}
+                                            </button>
+                                          </h5>
+                                       </div>
+                                       <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                                          <form id="addParticipantForm" class="card-body row d-flex align-items-center">
+                                              <div class="form-group col-md-4">
+                                                <label for="participant_name"></label><input type="text" class="form-control mb-2" id="participant_name" name="participant_name" placeholder="Participant Name">
+                                              </div>
+                                              <div class="form-group col-md-4">
+                                                <label for="contact_info"></label><input type="text" class="form-control mb-2" id="contact_info" name="contact_info" placeholder="Contact Info (optional)">
+                                              </div>
+                                              <div class="form-group col-md-4">
+                                                <button type="submit" class="btn btn-primary rounded-pill" id="addParticipantBtn" data-event-name="{{ event.event_name }}" data-activity-id="{{ activity.id }}">Add Participant</button>
+                                              </div>
+                                          </form>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </li>
+                                {% endif %}
+                            </ul>
                         </li>
-                    {% endfor %}
-                {% else %}
-                    <li class="list-group-item">No dates available</li>
+                        {% endfor %}
+                        {% if not view_only %}
+                        <li class="list-group mb-2">
+                            <div id="accordion2">
+                            <div class="card">
+                               <div class="card-header" id="headingTwo">
+                                  <h5 class="mb-0">
+                                    <button class="btn btn-link" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                      Add Activity for {{ e_date.event_date }}
+                                    </button>
+                                  </h5>
+                               </div>
+                               <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion2">
+                                  <div class="card-body">
+                                    Add widgets to add Activity here
+                                  </div>
+                                </div>
+                            </div>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </li>
+                {% endfor %}
+                {% if not view_only %}
+                <li class="list-group mb-2">
+                    <div id="accordion3">
+                    <div class="card">
+                       <div class="card-header" id="headingThree">
+                          <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+                              Add Event Date for {{ event.event_name }}
+                            </button>
+                          </h5>
+                       </div>
+                       <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion3">
+                          <div class="card-body">
+                            Add widgets to add event date here
+                          </div>
+                        </div>
+                    </div>
+                    </div>
+                </li>
                 {% endif %}
             </ul>
+            {% endif %}
         </div>
     </div>
 </div>
