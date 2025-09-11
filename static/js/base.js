@@ -122,6 +122,47 @@ if (addActivityForms) {
     });
 }
 
+
+const addEventForms = document.getElementsByClassName('add-event-form');
+if (addEventForms) {
+    Array.from(addEventForms).map(addEventForm => {
+        addEventForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const eventDate = data.event_date;
+            const url = '/event/' + event.target.addEventBtn.dataset.eventId;
+            const eventName = event.target.addEventBtn.dataset.eventName;
+            const payload = {
+                event_date: eventDate,
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    window.location = '/' + eventName;
+                } else {
+                    // Handle error
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.detail}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        })
+    });
+}
+
 async function removeParticipant(participantId, eventName) {
     const url = '/eventparticipant/' + participantId;
     try {

@@ -91,13 +91,18 @@ async def create_event(db: db_dependency, event_request: EventRequest):
 
     return {'message': 'Event created successfully', 'event_id': new_event.id}
 
+class EventDateRequest(BaseModel):
+    event_date: date = Field(default=None)
+
 @router.post("/event/{event_id}", status_code=status.HTTP_201_CREATED)
-async def create_event_date(db: db_dependency, event_date: date, event_id: int):
-    if event_date:
-        new_event_date = EventDate(event_id=event_id, event_date=event_date, event_active=1, create_date=datetime.now(timezone.utc))
-        db.add(new_event_date)
-        db.commit()
-        db.refresh(new_event_date)
+async def create_event_date(db: db_dependency, event_date_request: EventDateRequest, event_id: int):
+    if event_date_request:
+        event_date = event_date_request.event_date
+        if event_date:
+            new_event_date = EventDate(event_id=event_id, event_date=event_date, event_active=1, create_date=datetime.now(timezone.utc))
+            db.add(new_event_date)
+            db.commit()
+            db.refresh(new_event_date)
 
 class ActivityRequest(BaseModel):
     activity_name: str = Field(min_length=3, max_length=50)
