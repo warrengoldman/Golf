@@ -35,8 +35,10 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
     Currently, it just returns the event_name.
     """
     event = get_event_json_sync(event_name, db)
-    view_only = False
-    return templates.TemplateResponse("event.html", {"request": request, "event": event, "view_only": view_only})
+    event_date_view_only = True
+    activity_view_only = True
+    participant_view_only = False
+    return templates.TemplateResponse("event.html", {"request": request, "event": event, "event_date_view_only": event_date_view_only, "activity_view_only": activity_view_only, "participant_view_only": participant_view_only})
 
 @router.get("/{event_name}/json")
 async def get_event_json(event_name: str, db: db_dependency):
@@ -170,3 +172,13 @@ async def delete_event_participant(db: db_dependency, participant_id: int):
     db.delete(participant)
     db.commit()
     return {'message': 'Participant deleted successfully'}
+
+@router.delete("/eventdate/{event_date_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_event_participant(db: db_dependency, event_date_id: int):
+    event_date = db.query(EventDate).filter(EventDate.id == event_date_id).first()
+    if not event_date:
+        return {'error': 'EventDate not found.'}, status.HTTP_404_NOT_FOUND
+
+    db.delete(event_date)
+    db.commit()
+    return {'message': 'EventDate deleted successfully'}

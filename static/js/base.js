@@ -202,3 +202,23 @@ async function removeActivity(activityId, eventName) {
         alert('An error occurred. Please try again.');
     }
 }
+
+async function removeEventDate(eventDateId, eventName) {
+    const url = '/eventdate/' + eventDateId;
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+        });
+
+        if (response.ok) {
+            window.location = '/' + eventName;
+        } else {
+            // Handle error
+            const errorData = await response.json();
+            alert(`Error: ${errorData.detail}`);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    }
+}
