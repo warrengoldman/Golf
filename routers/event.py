@@ -35,8 +35,8 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
     Currently, it just returns the event_name.
     """
     event = get_event_json_sync(event_name, db)
-    event_date_view_only = True
-    activity_view_only = True
+    event_date_view_only = False
+    activity_view_only = False
     participant_view_only = False
     return templates.TemplateResponse("event.html", {"request": request, "event": event, "event_date_view_only": event_date_view_only, "activity_view_only": activity_view_only, "participant_view_only": participant_view_only})
 
