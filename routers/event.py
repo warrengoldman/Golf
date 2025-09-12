@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 from starlette import status
 from database import SessionLocal
-from typing import Annotated
+from typing import Annotated, Optional
 from sqlalchemy.orm import Session, InstrumentedAttribute
 from models import Event, EventDate, Activity, Participant
 from datetime import datetime, timezone, date
@@ -72,6 +72,10 @@ async def get_activity_json(activity_id: int, db: db_dependency):
 class EventRequest(BaseModel):
     event_name: str = Field(min_length=3, max_length=15, pattern=r"[a-zA-Z0-9\-_/]+$")
     description: str = Field(default=None, max_length=100)
+    event_date: Optional[date] = None
+
+
+class EventDateRequest(BaseModel):
     event_date: date = Field(default=None)
 
 @router.post("/event", status_code=status.HTTP_201_CREATED)
@@ -89,12 +93,11 @@ async def create_event(db: db_dependency, event_request: EventRequest):
     db.add(new_event)
     db.commit()
     db.refresh(new_event)
-    await create_event_date(db, event_request.event_date, new_event.id)
+    if event_request.event_date:
+        event_date_request:EventDateRequest = EventDateRequest(event_date=event_request.event_date)
+        await create_event_date(db, event_date_request, new_event.id)
 
     return {'message': 'Event created successfully', 'event_id': new_event.id}
-
-class EventDateRequest(BaseModel):
-    event_date: date = Field(default=None)
 
 @router.post("/event/{event_id}", status_code=status.HTTP_201_CREATED)
 async def create_event_date(db: db_dependency, event_date_request: EventDateRequest, event_id: int):

@@ -8,12 +8,13 @@ if (mainForm) {
         const data = Object.fromEntries(formData.entries());
         const eventName = data.event_name;
         const description = data.description;
-        const eventDate = data.event_date;
         const payload = {
             event_name: eventName,
-            description: description,
-            event_date: eventDate,
+            description: description
         };
+        if (data.event_date && data.event_date !== "") {
+            payload["event_date"] = data.event_date;
+        }
 
         try {
             const response = await fetch('/event', {
