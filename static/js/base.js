@@ -15,6 +15,9 @@ if (mainForm) {
         if (data.event_date && data.event_date !== "") {
             payload["event_date"] = data.event_date;
         }
+        if (data.event_view_only && data.event_view_only !== "") {
+            payload["event_view_only"] = data.event_view_only;
+        }
 
         try {
             const response = await fetch('/event', {

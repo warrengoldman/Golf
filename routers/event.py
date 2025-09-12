@@ -73,6 +73,7 @@ class EventRequest(BaseModel):
     event_name: str = Field(min_length=3, max_length=15, pattern=r"[a-zA-Z0-9\-_/]+$")
     description: str = Field(default=None, max_length=100)
     event_date: Optional[date] = None
+    event_view_only: Optional[bool] = False
 
 
 class EventDateRequest(BaseModel):
