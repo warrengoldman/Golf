@@ -31,7 +31,7 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
     Handles GET requests to the /{event_name} path.
     Will retrieve data for event_name from the database
     """
-    event = await get_event_json_sync(event_name, datetime.date(2025, 9, 22), db)
+    event = await get_event_json_sync(event_name, None, db)
     return await get_event_display(event, request)
 
 @router.get("/{event_name}/next")
@@ -41,7 +41,7 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
     Will retrieve data for event_name from the database
     """
 
-    event = await get_event_json_sync(event_name, db)
+    event = await get_event_json_sync(event_name, datetime.date.today(), db)
     return await get_event_display(event, request)
 
 async def get_event_display(event: Event, request: Request):
@@ -88,7 +88,7 @@ async def get_event_json_sync(event_name: str, event_date: date, db: db_dependen
         event_ret = Event()
         if event.event_dates:  # Access event_dates to ensure they are loaded
             for ed in event.event_dates:
-                if ed.event_date > event_date:
+                if ed.event_date >= event_date:
                     event_ret.event_dates.append(ed)
                     activities = ed.activities  # Access activities to ensure they are loaded
                     if activities:
