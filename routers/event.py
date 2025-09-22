@@ -41,6 +41,21 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
     event_view_only = False if event.event_config is None else event.event_config.event_view_only
     activity_view_only = False if event.event_config is None else event.event_config.activity_view_only
     participant_view_only = False if event.event_config is None else event.event_config.participant_view_only
+    admin = request.query_params.get('admin')
+    if admin:
+        event_view_only = False
+        activity_view_only = False
+        participant_view_only = False
+    else:
+        event_param = request.query_params.get('event_view_only')
+        if event_param is not None:
+            event_view_only = event_param.lower() in ('true', '1', 'yes')
+        activity_param = request.query_params.get('activity_view_only')
+        if activity_param is not None:
+            activity_view_only = activity_param.lower() in ('true', '1', 'yes')
+        participant_param = request.query_params.get('participant_view_only')
+        if participant_param is not None:
+            participant_view_only = participant_param.lower() in ('true', '1', 'yes')
 
     return templates.TemplateResponse("event.html", {"request": request, "event": event, "event_date_view_only": event_view_only, "activity_view_only": activity_view_only, "participant_view_only": participant_view_only})
 
@@ -69,6 +84,11 @@ async def get_event_json_sync(event_name: str, db: db_dependency):
 
     return event
 
+@router.get("/event/all")
+async def get_events(db: db_dependency):
+    events = db.query(Event).all()
+    return events
+
 @router.get("/event/activity/{activity_id}/json")
 async def get_activity_json(activity_id: int, db: db_dependency):
     activity = db.query(Activity).filter(Activity.id == activity_id).first()
@@ -78,11 +98,46 @@ async def get_activity_json(activity_id: int, db: db_dependency):
     return activity
 
 @router.get("/event/config/{event_id}")
-async def get_activity_json(event_id: int, db: db_dependency):
-    event_config = db.query(Activity).filter(EventConfig.event_id == event_id).first()
+async def get_event_config(event_id: int, db: db_dependency):
+    event_config = db.query(EventConfig).filter(EventConfig.event_id == event_id).first()
     if not event_config:
         return {'error': f'EventConfig not found for {event_id}.', 'status': status.HTTP_404_NOT_FOUND}
     return event_config
+
+@router.get("/event/config")
+async def get_event_configs(db: db_dependency):
+    event_configs = db.query(EventConfig).all()
+    if not event_configs:
+        return {'error': 'No event configs found.', 'status': status.HTTP_404_NOT_FOUND}
+    return event_configs
+
+class EventConfigRequest(BaseModel):
+    event_view_only: Optional[bool] = False
+    activity_view_only: Optional[bool] = False
+    participant_view_only: Optional[bool] = False
+
+@router.post("/event/{event_id}/config", status_code=status.HTTP_201_CREATED)
+async def create_event_config(event_id: int, db: db_dependency, event_config_request: EventConfigRequest):
+    event_view_only = 1 if event_config_request.event_view_only else 0
+    activity_view_only = 1 if event_config_request.activity_view_only else 0
+    participant_view_only = 1 if event_config_request.participant_view_only else 0
+    new_event_config = EventConfig(event_id=event_id, event_view_only=event_view_only, activity_view_only=activity_view_only, participant_view_only=participant_view_only)
+    db.add(new_event_config)
+    db.commit()
+    db.refresh(new_event_config)
+
+@router.put("/event/config/{event_config_id}", status_code=status.HTTP_201_CREATED)
+async def create_event_config(event_config_id: int, db: db_dependency, event_config_request: EventConfigRequest):
+    event_config = db.query(EventConfig).filter(EventConfig.id == event_config_id).first()
+    if event_config is None:
+        return {'error': f'EventConfig not found for {event_config_id}.'}, status.HTTP_400_BAD_REQUEST
+    event_config.event_view_only = 1 if event_config_request.event_view_only else 0
+    event_config.activity_view_only = 1 if event_config_request.activity_view_only else 0
+    event_config.participant_view_only = 1 if event_config_request.participant_view_only else 0
+    db.commit()
+    db.refresh(event_config)
+    return event_config
+
 
 class EventRequest(BaseModel):
     event_name: str = Field(min_length=3, max_length=15, pattern=r"[a-zA-Z0-9\-_/]+$")
