@@ -18,6 +18,12 @@ if (mainForm) {
         if (data.event_view_only && data.event_view_only !== "") {
             payload["event_view_only"] = data.event_view_only;
         }
+        if (data.activity_view_only && data.activity_view_only !== "") {
+            payload["activity_view_only"] = data.activity_view_only;
+        }
+        if (data.participant_view_only && data.participant_view_only !== "") {
+            payload["participant_view_only"] = data.participant_view_only;
+        }
 
         try {
             const response = await fetch('/event', {

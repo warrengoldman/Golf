@@ -184,6 +184,11 @@ async def create_event(db: db_dependency, event_request: EventRequest):
     Will create a new event in the database with the provided event_name and description.
     If an event with the same name already exists, it will return a 400 Bad Request error.
     """
+
+    event_view_only = 1 if event_request.event_view_only else 0
+    activity_view_only = 1 if event_request.activity_view_only else 0
+    participant_view_only = 1 if event_request.participant_view_only else 0
+
     existing_event = db.query(Event).filter(Event.event_name == event_request.event_name).first()
     if existing_event:
         return {'error': 'Event with this name already exists.'}, status.HTTP_400_BAD_REQUEST
@@ -197,9 +202,6 @@ async def create_event(db: db_dependency, event_request: EventRequest):
         await create_event_date(db, event_date_request, new_event.id)
 
     # Create EventConfig
-    event_view_only = 1 if event_request.event_view_only else 0
-    activity_view_only = 1 if event_request.activity_view_only else 0
-    participant_view_only = 1 if event_request.participant_view_only else 0
     new_event_config = EventConfig(event_id=new_event.id, event_view_only=event_view_only, activity_view_only=activity_view_only, participant_view_only=participant_view_only)
     db.add(new_event_config)
     db.commit()
