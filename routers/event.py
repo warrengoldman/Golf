@@ -71,7 +71,7 @@ async def get_event_display(event: Event, request: Request):
 
 @router.get("/{event_name}/json")
 async def get_event_json(event_name: str, db: db_dependency):
-    event_json = await get_event_json_sync(event_name, db)
+    event_json = await get_event_json_sync(event_name, None, db)
     return event_json
 
 async def get_event_json_sync(event_name: str, event_date: date, db: db_dependency):
@@ -84,25 +84,34 @@ async def get_event_json_sync(event_name: str, event_date: date, db: db_dependen
 
     if not event:
         return {'error': f'Event not found for {event_name}. TBD Handle this', 'status': status.HTTP_404_NOT_FOUND}
-    event_ret = Event()
-    event_ret.event_dates = []
-    if event.event_dates:  # Access event_dates to ensure they are loaded
-        for ed in event.event_dates:
-            if ed.event_date > event_date:
-                event_ret.event_dates.append(ed)
+    if event_date is not None:
+        event_ret = Event()
+        if event.event_dates:  # Access event_dates to ensure they are loaded
+            for ed in event.event_dates:
+                if ed.event_date > event_date:
+                    event_ret.event_dates.append(ed)
+                    activities = ed.activities  # Access activities to ensure they are loaded
+                    if activities:
+                        for act in activities:
+                            _ = act.participants  # Access participants to ensure they are loaded
+        if event.event_config:
+            _ = event.event_config
+        event_ret.event_config = event.event_config
+        event_ret.event_name = event.event_name
+        event_ret.description = event.description
+        event_ret.id = event.id
+        event_ret.create_date = event.create_date
+        return event_ret
+    else:
+        if event.event_dates:  # Access event_dates to ensure they are loaded
+            for ed in event.event_dates:
                 activities = ed.activities  # Access activities to ensure they are loaded
                 if activities:
                     for act in activities:
                         _ = act.participants  # Access participants to ensure they are loaded
-    if event.event_config:
-        _ = event.event_config
-
-    event_ret.event_config = event.event_config
-    event_ret.event_name = event.event_name
-    event_ret.description = event.description
-    event_ret.id = event.id
-    event_ret.create_date = event.create_date
-    return event_ret
+        if event.event_config:
+            _ = event.event_config
+        return event
 
 @router.get("/event/all")
 async def get_events(db: db_dependency):
