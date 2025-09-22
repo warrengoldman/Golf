@@ -31,17 +31,12 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
     Handles GET requests to the /{event_name} path.
     Will retrieve data for event_name from the database
     """
-    event = await get_event_json_sync(event_name, None, db)
+    event = await get_event_json_sync(event_name, datetime.date.today(), db)
     return await get_event_display(event, request)
 
-@router.get("/{event_name}/next")
-async def display_event(event_name: str, db: db_dependency, request: Request):
-    """
-    Handles GET requests to the /{event_name} path.
-    Will retrieve data for event_name from the database
-    """
-
-    event = await get_event_json_sync(event_name, datetime.date.today(), db)
+@router.get("/{event_name}/all")
+async def display_old_events_also(event_name: str, db: db_dependency, request: Request):
+    event = await get_event_json_sync(event_name, None, db)
     return await get_event_display(event, request)
 
 async def get_event_display(event: Event, request: Request):
