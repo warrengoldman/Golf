@@ -4,7 +4,7 @@ from starlette import status
 from database import SessionLocal
 from typing import Annotated, Optional
 from sqlalchemy.orm import Session, InstrumentedAttribute
-from models import Event, EventDate, Activity, Participant
+from models import Event, EventDate, Activity, Participant, EventConfig
 from datetime import datetime, timezone, date
 from fastapi.templating import Jinja2Templates
 router = APIRouter()
@@ -34,17 +34,22 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
         If data exists, render a page with the event data.
     Currently, it just returns the event_name.
     """
-    event = get_event_json_sync(event_name, db)
-    event_date_view_only = False
-    activity_view_only = False
-    participant_view_only = False
-    return templates.TemplateResponse("event.html", {"request": request, "event": event, "event_date_view_only": event_date_view_only, "activity_view_only": activity_view_only, "participant_view_only": participant_view_only})
+    event = await get_event_json_sync(event_name, db)
+    if type(event) is dict:
+        return templates.TemplateResponse("home.html", {"request": request})
+
+    event_view_only = False if event.event_config is None else event.event_config.event_view_only
+    activity_view_only = False if event.event_config is None else event.event_config.activity_view_only
+    participant_view_only = False if event.event_config is None else event.event_config.participant_view_only
+
+    return templates.TemplateResponse("event.html", {"request": request, "event": event, "event_date_view_only": event_view_only, "activity_view_only": activity_view_only, "participant_view_only": participant_view_only})
 
 @router.get("/{event_name}/json")
 async def get_event_json(event_name: str, db: db_dependency):
-    return get_event_json_sync(event_name, db)
+    event_json = await get_event_json_sync(event_name, db)
+    return event_json
 
-def get_event_json_sync(event_name: str, db: db_dependency):
+async def get_event_json_sync(event_name: str, db: db_dependency):
     """
     Handles GET requests to the /{event_name}/json path.
     Will retrieve data for event_name from the database and return it as JSON.
@@ -52,13 +57,16 @@ def get_event_json_sync(event_name: str, db: db_dependency):
     """
     event = db.query(Event).filter(Event.event_name == event_name).first()
     if not event:
-        return {'error': 'Event not found. TBD Handle this', 'status': status.HTTP_404_NOT_FOUND}
+        return {'error': f'Event not found for {event_name}. TBD Handle this', 'status': status.HTTP_404_NOT_FOUND}
     if event.event_dates:  # Access event_dates to ensure they are loaded
         for ed in event.event_dates:
             activities = ed.activities  # Access activities to ensure they are loaded
             if activities:
                 for act in activities:
                     _ = act.participants  # Access participants to ensure they are loaded
+    if event.event_config:
+        _ = event.event_config
+
     return event
 
 @router.get("/event/activity/{activity_id}/json")
@@ -69,11 +77,20 @@ async def get_activity_json(activity_id: int, db: db_dependency):
     _ = activity.participants  # Access participants to ensure they are loaded
     return activity
 
+@router.get("/event/config/{event_id}")
+async def get_activity_json(event_id: int, db: db_dependency):
+    event_config = db.query(Activity).filter(EventConfig.event_id == event_id).first()
+    if not event_config:
+        return {'error': f'EventConfig not found for {event_id}.', 'status': status.HTTP_404_NOT_FOUND}
+    return event_config
+
 class EventRequest(BaseModel):
     event_name: str = Field(min_length=3, max_length=15, pattern=r"[a-zA-Z0-9\-_/]+$")
     description: str = Field(default=None, max_length=100)
     event_date: Optional[date] = None
     event_view_only: Optional[bool] = False
+    activity_view_only: Optional[bool] = False
+    participant_view_only: Optional[bool] = False
 
 
 class EventDateRequest(BaseModel):
@@ -97,6 +114,15 @@ async def create_event(db: db_dependency, event_request: EventRequest):
     if event_request.event_date:
         event_date_request:EventDateRequest = EventDateRequest(event_date=event_request.event_date)
         await create_event_date(db, event_date_request, new_event.id)
+
+    # Create EventConfig
+    event_view_only = 1 if event_request.event_view_only else 0
+    activity_view_only = 1 if event_request.activity_view_only else 0
+    participant_view_only = 1 if event_request.participant_view_only else 0
+    new_event_config = EventConfig(event_id=new_event.id, event_view_only=event_view_only, activity_view_only=activity_view_only, participant_view_only=participant_view_only)
+    db.add(new_event_config)
+    db.commit()
+    db.refresh(new_event_config)
 
     return {'message': 'Event created successfully', 'event_id': new_event.id}
 

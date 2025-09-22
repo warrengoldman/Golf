@@ -14,6 +14,17 @@ class Event(Base):
     description = Column(String, nullable=True)
     create_date = Column(DateTime, nullable=True)
     event_dates: Mapped[List["EventDate"]] = relationship(back_populates="event", cascade="all, delete, delete-orphan")
+    event_config: Mapped["EventConfig"] = relationship(back_populates="event", uselist=False, cascade="all, delete, delete-orphan")
+
+class EventConfig(Base):
+    __tablename__ = 'event_config'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"))
+    event: Mapped["Event"] = relationship(back_populates="event_config")
+    event_view_only: Mapped[int] = mapped_column(default=0)  # 0 = editable, 1 = view-only
+    activity_view_only: Mapped[int] = mapped_column(default=0)  # 0 = editable, 1 = view-only
+    participant_view_only: Mapped[int] = mapped_column(default=0)  # 0 = editable, 1 = view-only
+
 
 class EventDate(Base):
     __tablename__ = 'event_date'
