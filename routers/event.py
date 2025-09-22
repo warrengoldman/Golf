@@ -31,7 +31,9 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
     Handles GET requests to the /{event_name} path.
     Will retrieve data for event_name from the database
     """
-    event = await get_event_json_sync(event_name, datetime.date.today(), db)
+    admin = request.query_params.get('admin')
+    date_filter = None if admin else datetime.date.today()
+    event = await get_event_json_sync(event_name, date_filter, db)
     return await get_event_display(event, request)
 
 @router.get("/{event_name}/all")
