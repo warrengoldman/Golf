@@ -5,7 +5,8 @@ from database import SessionLocal
 from typing import Annotated, Optional
 from sqlalchemy.orm import Session, InstrumentedAttribute
 from models import Event, EventDate, Activity, Participant, EventConfig
-from datetime import datetime, timezone, date
+from datetime import timezone, date
+import datetime
 from fastapi.templating import Jinja2Templates
 router = APIRouter()
 
@@ -29,12 +30,21 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
     """
     Handles GET requests to the /{event_name} path.
     Will retrieve data for event_name from the database
-    To be implemented in the future:
-        If no data exists for event_name, redirect to root path with message set to "Event not found".
-        If data exists, render a page with the event data.
-    Currently, it just returns the event_name.
     """
+    event = await get_event_json_sync(event_name, datetime.date(2025, 9, 22), db)
+    return await get_event_display(event, request)
+
+@router.get("/{event_name}/next")
+async def display_event(event_name: str, db: db_dependency, request: Request):
+    """
+    Handles GET requests to the /{event_name} path.
+    Will retrieve data for event_name from the database
+    """
+
     event = await get_event_json_sync(event_name, db)
+    return await get_event_display(event, request)
+
+async def get_event_display(event: Event, request: Request):
     if type(event) is dict:
         return templates.TemplateResponse("home.html", {"request": request})
 
@@ -64,25 +74,35 @@ async def get_event_json(event_name: str, db: db_dependency):
     event_json = await get_event_json_sync(event_name, db)
     return event_json
 
-async def get_event_json_sync(event_name: str, db: db_dependency):
+async def get_event_json_sync(event_name: str, event_date: date, db: db_dependency):
     """
     Handles GET requests to the /{event_name}/json path.
     Will retrieve data for event_name from the database and return it as JSON.
     If no data exists for event_name, it will return a 404 Not Found error.
     """
     event = db.query(Event).filter(Event.event_name == event_name).first()
+
     if not event:
         return {'error': f'Event not found for {event_name}. TBD Handle this', 'status': status.HTTP_404_NOT_FOUND}
+    event_ret = Event()
+    event_ret.event_dates = []
     if event.event_dates:  # Access event_dates to ensure they are loaded
         for ed in event.event_dates:
-            activities = ed.activities  # Access activities to ensure they are loaded
-            if activities:
-                for act in activities:
-                    _ = act.participants  # Access participants to ensure they are loaded
+            if ed.event_date > event_date:
+                event_ret.event_dates.append(ed)
+                activities = ed.activities  # Access activities to ensure they are loaded
+                if activities:
+                    for act in activities:
+                        _ = act.participants  # Access participants to ensure they are loaded
     if event.event_config:
         _ = event.event_config
 
-    return event
+    event_ret.event_config = event.event_config
+    event_ret.event_name = event.event_name
+    event_ret.description = event.description
+    event_ret.id = event.id
+    event_ret.create_date = event.create_date
+    return event_ret
 
 @router.get("/event/all")
 async def get_events(db: db_dependency):
@@ -162,7 +182,7 @@ async def create_event(db: db_dependency, event_request: EventRequest):
     if existing_event:
         return {'error': 'Event with this name already exists.'}, status.HTTP_400_BAD_REQUEST
 
-    new_event = Event(event_name=event_request.event_name, description=event_request.description, create_date=datetime.now(timezone.utc))
+    new_event = Event(event_name=event_request.event_name, description=event_request.description, create_date=datetime.datetime.now(timezone.utc))
     db.add(new_event)
     db.commit()
     db.refresh(new_event)
@@ -186,7 +206,7 @@ async def create_event_date(db: db_dependency, event_date_request: EventDateRequ
     if event_date_request:
         event_date = event_date_request.event_date
         if event_date:
-            new_event_date = EventDate(event_id=event_id, event_date=event_date, event_active=1, create_date=datetime.now(timezone.utc))
+            new_event_date = EventDate(event_id=event_id, event_date=event_date, event_active=1, create_date=datetime.datetime.now(timezone.utc))
             db.add(new_event_date)
             db.commit()
             db.refresh(new_event_date)
@@ -201,8 +221,8 @@ async def create_event_date_activity(db: db_dependency, activity: ActivityReques
     if not event_date:
         return {'error': 'Event date not found.'}, status.HTTP_404_NOT_FOUND
 
-    activity_time_obj = datetime.strptime(activity.activity_time, "%H:%M").time()
-    new_activity = Activity(event_date_id=event_date_id, activity_name=activity.activity_name, activity_time=activity_time_obj, create_date=datetime.now(timezone.utc))
+    activity_time_obj = datetime.datetime.strptime(activity.activity_time, "%H:%M").time()
+    new_activity = Activity(event_date_id=event_date_id, activity_name=activity.activity_name, activity_time=activity_time_obj, create_date=datetime.datetime.now(timezone.utc))
     db.add(new_activity)
     db.commit()
     db.refresh(new_activity)
@@ -221,7 +241,7 @@ async def add_participant_to_activity(db: db_dependency, activity_id: int, parti
     if not activity:
         return {'error': 'Activity not found.'}, status.HTTP_404_NOT_FOUND
 
-    new_participant = Participant(activity_id=activity_id, participant_name=participant_name, contact_info=contact_info, create_date=datetime.now(timezone.utc))
+    new_participant = Participant(activity_id=activity_id, participant_name=participant_name, contact_info=contact_info, create_date=datetime.datetime.now(timezone.utc))
     db.add(new_participant)
     db.commit()
     db.refresh(new_participant)
