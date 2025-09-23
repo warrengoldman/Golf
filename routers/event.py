@@ -71,6 +71,37 @@ async def get_event_json(event_name: str, db: db_dependency):
     event_json = await get_event_json_sync(event_name, None, db)
     return event_json
 
+
+@router.get("/{event_name}/addnextdate")
+async def get_event_json(event_name: str, db: db_dependency, request: Request):
+    params = request.query_params
+    next_day_event : int = int(params.get("day", 3)) # get next day of week for event, 0 (thursday) is default
+    today = date.today()
+    todays_weekday : int = today.weekday()
+    if todays_weekday <= next_day_event:
+        days_until_next_day = next_day_event - todays_weekday
+    else:
+        days_until_next_day = 7 - (todays_weekday - next_day_event)
+    event_date = today + datetime.timedelta(days=days_until_next_day)
+    event_id = db.query(Event).filter(Event.event_name == event_name).first().id
+    event_date_obj : EventDate = EventDate(event_id=event_id, event_date=event_date, event_active=1, create_date=datetime.datetime.now(timezone.utc))
+    db.add(event_date_obj)
+    db.commit()
+    db.refresh(event_date_obj)
+    event_date_id = event_date_obj.id
+    for key in params:
+        if key != 'day':
+            values : list[str] = params.getlist(key)
+            for val in values:
+                activity_time_obj = datetime.datetime.strptime(val, "%H:%M").time()
+                act = Activity(event_date_id=event_date_id, activity_name=key,
+                         activity_time=activity_time_obj, create_date=datetime.datetime.now(timezone.utc))
+                event_date_obj.activities.append(act)
+    db.add(event_date_obj)
+    db.commit()
+    db.refresh(event_date_obj)
+
+
 async def get_event_json_sync(event_name: str, event_date: date, db: db_dependency):
     """
     Handles GET requests to the /{event_name}/json path.
