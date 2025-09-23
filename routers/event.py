@@ -221,7 +221,6 @@ async def create_event(db: db_dependency, event_request: EventRequest):
     event_view_only = 1 if event_request.event_view_only else 0
     activity_view_only = 1 if event_request.activity_view_only else 0
     participant_view_only = 1 if event_request.participant_view_only else 0
-
     existing_event = db.query(Event).filter(Event.event_name == event_request.event_name).first()
     if existing_event:
         return {'error': 'Event with this name already exists.'}, status.HTTP_400_BAD_REQUEST

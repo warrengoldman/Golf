@@ -7,7 +7,7 @@
             <p class="card-text">Add event name and optionally the events first date</p>
             <p class="card-text">Event names must be globally unique</p>
             <p class="card-text">Events can contain more than one date, you may add those later</p>
-            <p class="card-text">You can access the event subsequently via url http://{app.domain}/{event name} </p>
+            <p class="card-text">You can access the event subsequently via url {{request.base_url}}{event name} </p>
             <form id="mainForm">
                 <label for="event_name">Event Name</label><input type="text" class="form-control mb-2" id="event_name" name="event_name" placeholder="Event Name" required>
                 <label for="description">Event Description</label><input type="text" class="form-control mb-2" id="description" name="description" placeholder="Event Description (optional)">
