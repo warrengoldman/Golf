@@ -143,7 +143,6 @@ async def get_event_json_sync(event_name: str, event_date: date, db: db_dependen
 
 @router.get("/event/list")
 async def get_events(db: db_dependency):
-    print('in alls')
     events = db.query(Event).all()
     return events
 
