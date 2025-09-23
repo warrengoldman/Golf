@@ -100,6 +100,7 @@ async def get_event_json(event_name: str, db: db_dependency, request: Request):
     db.add(event_date_obj)
     db.commit()
     db.refresh(event_date_obj)
+    return await display_event(event_name, db, request)
 
 
 async def get_event_json_sync(event_name: str, event_date: date, db: db_dependency):
