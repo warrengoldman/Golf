@@ -215,6 +215,8 @@ async def create_event(db: db_dependency, event_request: EventRequest):
     Will create a new event in the database with the provided event_name and description.
     If an event with the same name already exists, it will return a 400 Bad Request error.
     """
+    if event_request.event_name == 'event':
+        return {'error': 'Event with this name is invalid.'}, status.HTTP_400_BAD_REQUEST
 
     event_view_only = 1 if event_request.event_view_only else 0
     activity_view_only = 1 if event_request.activity_view_only else 0
