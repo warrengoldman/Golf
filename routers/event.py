@@ -33,7 +33,7 @@ async def display_event(event_name: str, db: db_dependency, request: Request):
     """
     admin = request.query_params.get('admin')
     date_filter = None if admin else datetime.date.today()
-    event = await get_event_json_sync(event_name, date_filter, db)
+    event = await get_event_json_sync(event_name.lower(), date_filter, db)
     return await get_event_display(event, request)
 
 @router.get("/{event_name}/all")
@@ -68,7 +68,7 @@ async def get_event_display(event: Event, request: Request):
 
 @router.get("/{event_name}/json")
 async def get_event_json(event_name: str, db: db_dependency):
-    event_json = await get_event_json_sync(event_name, None, db)
+    event_json = await get_event_json_sync(event_name.lower(), None, db)
     return event_json
 
 
@@ -83,7 +83,7 @@ async def get_event_json(event_name: str, db: db_dependency, request: Request):
     else:
         days_until_next_day = 7 - (todays_weekday - next_day_event)
     event_date = today + datetime.timedelta(days=days_until_next_day)
-    event_id = db.query(Event).filter(Event.event_name == event_name).first().id
+    event_id = db.query(Event).filter(Event.event_name == event_name.lower()).first().id
     event_date_obj : EventDate = EventDate(event_id=event_id, event_date=event_date, event_active=1, create_date=datetime.datetime.now(timezone.utc))
     db.add(event_date_obj)
     db.commit()
@@ -109,7 +109,7 @@ async def get_event_json_sync(event_name: str, event_date: date, db: db_dependen
     Will retrieve data for event_name from the database and return it as JSON.
     If no data exists for event_name, it will return a 404 Not Found error.
     """
-    event = db.query(Event).filter(Event.event_name == event_name).first()
+    event = db.query(Event).filter(Event.event_name == event_name.lower()).first()
 
     if not event:
         return {'error': f'Event not found for {event_name}. TBD Handle this', 'status': status.HTTP_404_NOT_FOUND}
@@ -216,17 +216,18 @@ async def create_event(db: db_dependency, event_request: EventRequest):
     Will create a new event in the database with the provided event_name and description.
     If an event with the same name already exists, it will return a 400 Bad Request error.
     """
-    if event_request.event_name == 'event':
+    event_name = event_request.event_name.lower()
+    if event_name == 'event':
         return {'error': 'Event with this name is invalid.'}, status.HTTP_400_BAD_REQUEST
 
     event_view_only = 1 if event_request.event_view_only else 0
     activity_view_only = 1 if event_request.activity_view_only else 0
     participant_view_only = 1 if event_request.participant_view_only else 0
-    existing_event = db.query(Event).filter(Event.event_name == event_request.event_name).first()
+    existing_event = db.query(Event).filter(Event.event_name == event_name).first()
     if existing_event:
         return {'error': 'Event with this name already exists.'}, status.HTTP_400_BAD_REQUEST
 
-    new_event = Event(event_name=event_request.event_name, description=event_request.description, create_date=datetime.datetime.now(timezone.utc))
+    new_event = Event(event_name=event_name, description=event_request.description, create_date=datetime.datetime.now(timezone.utc))
     db.add(new_event)
     db.commit()
     db.refresh(new_event)
