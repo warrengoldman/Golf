@@ -1,7 +1,7 @@
 {% include 'layout.html' %}
 <div class="container">
     <div class="card">
-        <div class="card-body">
+        <div class="card-body gradient-custom">
             <h5 class="card-title">Event: {{ event.event_name }}</h5>
             <p class="card-text">{{ event.description }}</p>
 
@@ -18,7 +18,7 @@
             </div>
             {% endif %}
             {% if event.event_dates %}
-            <ul class="list-group border rounded bg-light">
+            <ul class="list-group border rounded gradient-custom-rev">
                 {% for e_date in event.event_dates %}
                         {% if not activity_view_only %}
                         <li class="list-group mb-2 ml-1">
