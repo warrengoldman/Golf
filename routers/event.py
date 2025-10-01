@@ -9,6 +9,7 @@ from datetime import timezone, date
 import datetime
 from fastapi.templating import Jinja2Templates
 router = APIRouter()
+from fastapi import HTTPException
 
 def get_db():
     db = SessionLocal()
@@ -218,14 +219,14 @@ async def create_event(db: db_dependency, event_request: EventRequest):
     """
     event_name = event_request.event_name.lower()
     if event_name == 'event':
-        return {'error': 'Event with this name is invalid.'}, status.HTTP_400_BAD_REQUEST
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Event with this name is invalid.')
 
     event_view_only = 1 if event_request.event_view_only else 0
     activity_view_only = 1 if event_request.activity_view_only else 0
     participant_view_only = 1 if event_request.participant_view_only else 0
     existing_event = db.query(Event).filter(Event.event_name == event_name).first()
     if existing_event:
-        return {'error': 'Event with this name already exists.'}, status.HTTP_400_BAD_REQUEST
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Event with this name is invalid.')
 
     new_event = Event(event_name=event_name, description=event_request.description, create_date=datetime.datetime.now(timezone.utc))
     db.add(new_event)
